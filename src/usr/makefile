@@ -5,7 +5,7 @@
 #
 # OpenPOWER HostBoot Project
 #
-# Contributors Listed Below - COPYRIGHT 2010,2016
+# Contributors Listed Below - COPYRIGHT 2010,2016,2017
 # [+] Google Inc.
 # [+] International Business Machines Corp.
 #
@@ -68,5 +68,6 @@ SUBDIRS += htmgt.d
 SUBDIRS += diag.d
 SUBDIRS += xz.d
 SUBDIRS += $(if $(CONFIG_ENABLE_HDAT_IN_HOSTBOOT),hdat.d,)
+SUBDIRS += $(if $(CONFIG_PBLOG),pblog.d)
 
 include ${ROOTPATH}/config.mk

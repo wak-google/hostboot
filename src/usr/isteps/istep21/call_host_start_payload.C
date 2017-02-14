@@ -58,6 +58,9 @@
 #include <secureboot/drtm.H>
 #endif
 
+#ifdef CONFIG_PBLOG
+#include <pblog/pblogif.H>
+#endif
 
 using namespace ERRORLOG;
 using namespace ISTEP;
@@ -398,6 +401,10 @@ errlHndl_t callShutdown ( uint64_t i_masterInstance,
                 break;
             }
         }
+
+#ifdef CONFIG_PBLOG
+        PBLOG::logBootEvent();
+#endif
 
         // do the shutdown.
         TRACFCOMP( ISTEPS_TRACE::g_trac_isteps_trace,

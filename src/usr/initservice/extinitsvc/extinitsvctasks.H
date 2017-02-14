@@ -57,6 +57,20 @@ const TaskInfo g_exttaskinfolist[]   =   {
         },
 
         /**
+         * @brief pblog library
+         */
+#ifdef CONFIG_PBLOG
+        {
+            "libpblog.so",                         // library name
+            NULL,                                  // no function to run
+            {
+                START_TASK,                        // task type
+                EXT_IMAGE,                         // extended image module
+            }
+        },
+#endif
+
+        /**
          * @brief console library
          */
 #ifdef CONFIG_CONSOLE

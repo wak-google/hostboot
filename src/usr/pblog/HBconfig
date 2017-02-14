@@ -1,0 +1,17 @@
+config PBLOG
+    default n
+    help
+        This enables protobuf-style log for events and errors.
+
+config PBLOG_PRINT
+    default y if PBLOG && CONSOLE_OUTPUT_ERRORDISPLAY
+    depends on PBLOG
+    depends on CONSOLE_OUTPUT_ERRORDISPLAY
+    help
+        This enables printing out the pblog during boot.
+
+config NVRAM
+    default y if PBLOG
+    depends on PBLOG
+    help
+        Enable parsing NVRAM variables to change system/firmware behavior.

@@ -6,6 +6,7 @@
 /* OpenPOWER HostBoot Project                                             */
 /*                                                                        */
 /* Contributors Listed Below - COPYRIGHT 2015,2017                        */
+/* [+] Google Inc.                                                        */
 /* [+] International Business Machines Corp.                              */
 /*                                                                        */
 /*                                                                        */
@@ -61,6 +62,7 @@ enum SectionId
     CAPP,           /**< CAPP lid */
     VERSION,        /**< PNOR version string section */
     HB_BOOTLOADER,  /**< Hostboot Bootloader image */
+    PBLOG,          /**< Event Log */
     TEST,           /**< Scratch space for PNOR test cases */
     TESTRO,         /**< Scratch space for PNOR ReadOnly test cases */
     BACKUP_PART,    /**< Backup of TOC*/

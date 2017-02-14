@@ -53,35 +53,36 @@ extern trace_desc_t* g_trac_pnor;
  * Eyecatcher strings for PNOR TOC entries
  */
 const char* cv_EYECATCHER[] = {
-    "part",      /**< PNOR::TOC              : Table of Contents */
-    "HBI",       /**< PNOR::HB_EXT_CODE      : Hostboot Extended Image */
-    "GLOBAL",    /**< PNOR::GLOBAL_DATA      : Global Data */
-    "HBB",       /**< PNOR::HB_BASE_CODE     : Hostboot Base Image */
-    "SBEC",      /**< PNOR::CENTAUR_SBE      : Centaur Self-Boot Engine image */
-    "SBE",       /**< PNOR::SBE_IPL          : Self-Boot Enginer IPL image */
-    "HCODE",     /**< PNOR::HCODE            : HCODE Reference image */
-    "PAYLOAD",   /**< PNOR::PAYLOAD          : HAL/OPAL */
-    "HBRT",      /**< PNOR::HB_RUNTIME       : Hostboot Runtime(for Sapphire)*/
-    "HBD",       /**< PNOR::HB_DATA          : Hostboot Data */
-    "GUARD",     /**< PNOR::GUARD_DATA       : Hostboot Data */
-    "HBEL",      /**< PNOR::HB_ERRLOGS       : Hostboot Error log Repository */
-    "DJVPD",     /**< PNOR::DIMM_JEDEC_VPD   : Dimm JEDEC VPD */
-    "MVPD",      /**< PNOR::MODULE_VPD       : Module VPD */
-    "CVPD",      /**< PNOR::CENTAUR_VPD      : Centaur VPD */
-    "NVRAM",     /**< PNOR::NVRAM            : OPAL Storage */
-    "OCC",       /**< PNOR::OCC              : OCC LID */
-    "FIRDATA",   /**< PNOR::FIRDATA          : FIRs for checkstop analysis */
-    "ATTR_TMP",  /**< PNOR::ATTR_TMP         : Temporary Attribute Overrides */
-    "ATTR_PERM", /**< PNOR::ATTR_PERM        : Permanent Attribute Overrides */
-    "CAPP",      /**< PNOR::CAPP             : CAPP LID */
-    "VERSION",   /**< PNOR::VERSION          : PNOR Version string */
-    "HBBL",      /**<PNOR::HB_BOOTLOADER     : Hostboot Bootloader image */
-    "TEST",      /**< PNOR::TEST             : Test space for PNOR*/
-    "TESTRO",    /**< PNOR::TESTRO           : ReadOnly Test space for PNOR */
-    "BACKUP_PART", /**PNOR::BACKUP_PART      : Backup of PART*/
-    "POWERVM",   /**< PNOR::POWERVM          : Power VM data */
-    "RINGOVD",   /**< PNOR::RINGOVD          : Ring overrides */
-    "WOFDATA",   /**< PNOR::WOFDATA          : VFRT data tables for WOF */
+    "part",        /**< PNOR::TOC              : Table of Contents */
+    "HBI",         /**< PNOR::HB_EXT_CODE      : Hostboot Extended Image */
+    "GLOBAL",      /**< PNOR::GLOBAL_DATA      : Global Data */
+    "HBB",         /**< PNOR::HB_BASE_CODE     : Hostboot Base Image */
+    "SBEC",        /**< PNOR::CENTAUR_SBE      : Centaur Self-Boot Engine image */
+    "SBE",         /**< PNOR::SBE_IPL          : Self-Boot Enginer IPL image */
+    "HCODE",       /**< PNOR::HCODE            : HCODE Reference image */
+    "PAYLOAD",     /**< PNOR::PAYLOAD          : HAL/OPAL */
+    "HBRT",        /**< PNOR::HB_RUNTIME       : Hostboot Runtime(for Sapphire) */
+    "HBD",         /**< PNOR::HB_DATA          : Hostboot Data */
+    "GUARD",       /**< PNOR::GUARD_DATA       : Hostboot Data */
+    "HBEL",        /**< PNOR::HB_ERRLOGS       : Hostboot Error log Repository */
+    "DJVPD",       /**< PNOR::DIMM_JEDEC_VPD   : Dimm JEDEC VPD */
+    "MVPD",        /**< PNOR::MODULE_VPD       : Module VPD */
+    "CVPD",        /**< PNOR::CENTAUR_VPD      : Centaur VPD */
+    "NVRAM",       /**< PNOR::NVRAM            : OPAL Storage */
+    "OCC",         /**< PNOR::OCC              : OCC LID */
+    "FIRDATA",     /**< PNOR::FIRDATA          : FIRDATA */
+    "ATTR_TMP",    /**< PNOR::ATTR_TMP         : Temporary Attribute Overrides */
+    "ATTR_PERM",   /**< PNOR::ATTR_PERM        : Permanent Attribute Overrides */
+    "CAPP",        /**< PNOR::CAPP             : CAPP LID */
+    "VERSION",     /**< PNOR::VERSION          : PNOR Version string */
+    "HBBL",        /**< PNOR::HB_BOOTLOADER    : Hostboot Bootloader image */
+    "PBLOG",       /**< PNOR::PBLOG            : Event Log */
+    "TEST",        /**< PNOR::TEST             : Test space for PNOR */
+    "TESTRO",      /**< PNOR::TESTRO           : ReadOnly Test space for PNOR */
+    "BACKUP_PART", /**< PNOR::BACKUP_PART      : Backup of PART */
+    "POWERVM",     /**< PNOR::POWERVM          : Power VM data */
+    "RINGOVD",     /**< PNOR::RINGOVD          : Ring overrides */
+    "WOFDATA",     /**< PNOR::WOFDATA          : VFRT data tables for WOF */
 };
 
 /**

@@ -199,6 +199,7 @@ EXTENDED_MODULES += isteps_mss
 EXTENDED_MODULES += p9_cpuWkup
 EXTENDED_MODULES += $(if $(CONFIG_ENABLE_HDAT_IN_HOSTBOOT),hdat)
 EXTENDED_MODULES += $(if $(CONFIG_SECUREBOOT),secureboot_ext)
+EXTENDED_MODULES += $(if $(CONFIG_PBLOG),pblog)
 
 #***************************************
 # Working test modules
