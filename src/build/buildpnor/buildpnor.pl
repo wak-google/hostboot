@@ -7,6 +7,7 @@
 # OpenPOWER HostBoot Project
 #
 # Contributors Listed Below - COPYRIGHT 2012,2017
+# [+] Google Inc.
 # [+] International Business Machines Corp.
 #
 #
@@ -31,6 +32,7 @@
 # numbers cannot be over 32 bits
 
 use strict;
+use bytes;
 use Data::Dumper;
 use File::Basename;
 use Cwd qw(abs_path);
@@ -56,10 +58,30 @@ my %SideOptions = (
         B => "B",
         sideless => "sideless",
     );
+my %bbinfo = (
+        "board" => "no-such-board",
+        "version" => "0.0.0",
+        "lock" => "dev",
+    );
+$bbinfo{timestamp} = gmtime;
 
 if ($#ARGV < 0) {
     usage();
     exit;
+}
+
+#Parse environment variables
+if (exists $ENV{BBINFO_BOARD}) {
+    $bbinfo{board} = $ENV{BBINFO_BOARD}
+}
+if (exists $ENV{BBINFO_VERSION}) {
+    $bbinfo{version} = $ENV{BBINFO_VERSION}
+}
+if (exists $ENV{BBINFO_LOCK}) {
+    $bbinfo{lock} = $ENV{BBINFO_LOCK}
+}
+if (exists $ENV{BBINFO_TIMESTAMP}) {
+    $bbinfo{timestamp} = $ENV{BBINFO_TIMESTAMP}
 }
 
 #Parse the commandline args
@@ -95,10 +117,22 @@ for (my $i=0; $i < $#ARGV + 1; $i++)
     elsif($ARGV[$i] =~ /--test/) {
         $testRun = 1;
     }
+    elsif($ARGV[$i] =~ /--bbinfoBoard/) {
+        $bbinfo{board} = $ARGV[++$i];
+    }
+    elsif($ARGV[$i] =~ /--bbinfoVersion/) {
+        $bbinfo{version} = $ARGV[++$i];
+    }
+    elsif($ARGV[$i] =~ /--bbinfoLock/) {
+        $bbinfo{lock} = $ARGV[++$i];
+    }
+    elsif($ARGV[$i] =~ /--bbinfoTimestamp/) {
+        $bbinfo{timestamp} = $ARGV[++$i];
+    }
     else {
         traceErr("Unrecognized Input: $ARGV[$i]");
         exit 1;
-	#Error!!
+    #Error!!
     }
 }
 
@@ -153,6 +187,14 @@ foreach my $sideId ( keys %{$pnorLayout{metadata}{sides}} )
     my $tocOffset = $pnorLayout{metadata}{sides}{$sideId}{toc}{primary};
 
     fillPnorImage($pnorBinName, \%pnorLayout, \%binFiles, $sideId, $tocOffset);
+}
+
+trace(1, "Testing for google metadata to be added");
+if (exists $pnorLayout{metadata}{tocSize} && exists $pnorLayout{metadata}{googleSize})
+{
+    trace(1, "Adding google metadata to image");
+    my $rc = addGoogleMetaToPnorImage($pnorBinName, \%pnorLayout, \%bbinfo);
+    die "ERROR: Call to addGoogleMetaToPnorImage() failed. Aborting!" if($rc);
 }
 
 exit 0;
@@ -483,6 +525,94 @@ sub fillPnorImage
      }
 }
 
+#################################################################################
+# addGoogleMetaToPnorImage - Add FMAP, HMAP, and BBINFO structs
+#################################################################################
+sub addGoogleMetaToPnorImage
+{
+    my ($i_pnorBinName, $i_pnorLayoutRef, $bbinfoRef) = @_;
+    my $imageSize = $$i_pnorLayoutRef{metadata}{imageSize};
+    my $offset = $$i_pnorLayoutRef{metadata}{tocSize};
+    my $maxSize = $$i_pnorLayoutRef{metadata}{googleSize};
+
+    my %sectionHash = %{$$i_pnorLayoutRef{sections}};
+    my $key;
+    my $numSections = keys(%sectionHash);
+    my $meta = "";
+
+    # Align FMAP structure on 16 byte boundary
+    addPaddingToAlign(\$meta, $offset, 16);
+
+    # Add FMAP header
+    $meta .= pack("a8CCQVa32v", "__FMAP__", 1, 2, 0, $imageSize, $$bbinfoRef{board}, $numSections);
+
+    # Add partition for the partition tables that can be used for hashing
+    $meta .= pack("VVa32v", 0, $offset + $maxSize, "part", 1);
+
+    # Add the rest of the partitions to the FMAP
+    my $endOfMap = 0;
+    for $key ( sort {$a<=> $b} keys %sectionHash)
+    {
+        my $description = $sectionHash{$key}{eyeCatch};
+        my $physicalOffset = $sectionHash{$key}{physicalOffset};
+        my $physicalRegionSize = $sectionHash{$key}{physicalRegionSize};
+        my $flags = ($sectionHash{$key}{preserved} eq "yes" ? 0 : 1);
+        trace(3, "flags:$flags writeable:$sectionHash{$key}{preserved}");
+
+        $endOfMap = $physicalOffset + $physicalRegionSize;
+        $meta .= pack("VVa32v", $physicalOffset, $physicalRegionSize, $description, $flags);
+    }
+
+    # Align HMAP structure on 16 byte boundary
+    addPaddingToAlign(\$meta, $offset, 16);
+
+    # Add HMAP header
+    $meta .= pack("a8CCva32a128", "__HASH__", 1, 0, $numSections, "SHA512", "\0");
+
+    # Add entry for the partition tables that it can be hashed
+    $meta .= pack("VVa32a128", 0, $offset + $maxSize, "part", "\0");
+
+    # Add the rest of the partition hashes
+    for $key ( sort {$a<=> $b} keys %sectionHash)
+    {
+        my $description = $sectionHash{$key}{eyeCatch};
+        my $physicalOffset = $sectionHash{$key}{physicalOffset};
+        my $physicalRegionSize = $sectionHash{$key}{physicalRegionSize};
+        $meta .= pack("VVa32a128", $physicalOffset, $physicalRegionSize, $description, "\0");
+    }
+
+    # Align bbinfo on a 16 byte boundary
+    addPaddingToAlign(\$meta, $offset, 16);
+
+    # Add bbinfo data
+    $meta .= "BBINFO__\0";
+    $meta .= "board:$$bbinfoRef{board}\0";
+    $meta .= "version:$$bbinfoRef{version}\0";
+    $meta .= "lock:$$bbinfoRef{lock}\0";
+    $meta .= "timestamp:$$bbinfoRef{timestamp}\0\0";
+
+    # Write the metadata to the pnor
+    my $size = bytes::length($meta);
+    die "Google metadata is too large for pnor allocation" if ($size > $maxSize);
+    open(PIPE, " | dd of=$i_pnorBinName conv=notrunc bs=1 seek=$offset count=$size >& /dev/null");
+    print(PIPE $meta);
+    close(PIPE);
+    return 0;
+}
+
+################################################################################
+# addPaddingToAlign - Adds null bytes to align the data to the proper alignment
+################################################################################
+sub addPaddingToAlign
+{
+    my ($i_bufferRef, $offset, $alignment) = @_;
+    my $extraBytes = ($offset + bytes::length($$i_bufferRef)) & ($alignment - 1);
+    if ($extraBytes != 0)
+    {
+        $$i_bufferRef .= "\0" x ($alignment - $extraBytes);
+    }
+}
+
 ################################################################################
 # saveInputFile - save inputfile name into binFiles array
 ################################################################################
@@ -605,6 +735,10 @@ print <<"ENDUSAGE";
     --fpartCmd          invoke string for executing the fpart tool
     --fcpCmd            invoke string for executing the fcp tool
     --test              Output test-only sections.
+    --bbinfoBoard       board name for BBINFO structure, only needed if you have an FMAP.
+    --bbinfoVersion     version string for BBINFO structure, only needed if you have an FMAP.
+    --bbinfoLock        lock string for BBINFO structure, only needed if you have an FMAP.
+    --bbinfoTimestamp   timestamp for BBINFO structure, only needed if you have an FMAP.
 
   Current Limitations:
       --TOC Records must be 4 or 8 bytes in length

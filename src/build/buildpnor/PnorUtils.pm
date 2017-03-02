@@ -7,6 +7,7 @@
 # OpenPOWER HostBoot Project
 #
 # Contributors Listed Below - COPYRIGHT 2016,2017
+# [+] Google Inc.
 # [+] International Business Machines Corp.
 #
 #
@@ -85,11 +86,21 @@ sub loadPnorLayout
         $$i_pnorLayoutRef{metadata}{blockSize}   = $blockSize;
         $$i_pnorLayoutRef{metadata}{tocSize}     = $tocSize;
         $$i_pnorLayoutRef{metadata}{arrangement} = $arrangement;
+        my $metadata = "imageSize = $imageSize, blockSize=$blockSize",
+            ", arrangement = $arrangement, tocSize: $tocSize";
+        if (exists $metadataEl->{googleSize})
+        {
+            my $googleSize = $metadataEl->{googleSize}[0];
+            $googleSize = getNumber($googleSize);
+            $$i_pnorLayoutRef{metadata}{googleSize} = $googleSize;
+            $metadata = $metadata . ", googleSize = $googleSize";
+        }
 
-        my $numOfSides  = scalar (@{$metadataEl->{side}});
+        my $numOfSides = scalar (@{$metadataEl->{side}});
         my $sideSize = ($imageSize)/($numOfSides);
+        $metadata = $metadata . "numOfSides: $numOfSides, sideSize: $sideSize";
 
-        trace(1, " $this_func: metadata: imageSize = $imageSize, blockSize=$blockSize, arrangement = $arrangement, numOfSides: $numOfSides, sideSize: $sideSize, tocSize: $tocSize");
+        trace(1, " $this_func: metadata: $metadata");
 
         #determine the TOC offsets from the arrangement and side Information
         #stored in the layout xml
